@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
-import imaplib
 import email
-import re
-import os
+import imaplib
 import json
-import click
+import os
+import re
+import smtplib
+import ssl
 
+import click
 
 CONFIG_FILEPATH = f"{os.path.dirname(os.path.realpath(__file__))}/config.json"
 
@@ -134,4 +136,27 @@ def send_email(config, filepath):
 
     subscribers = sync_subscribers(config)
     click.echo(subscribers)
-    click.echo(f"Sent {filepath} to {len(subscribers)} subscriber(s)")
+
+    # Create a secure SSL context.
+    context = ssl.create_default_context()
+
+    # TODO: Split email reading & sending out into a separate service.
+    with smtplib.SMTP_SSL(config.host, 465, context=context) as server:
+        server.login(config.user, config.password)
+
+        msg = email.message.EmailMessage()
+        msg['Subject'] = 'Hello again!'
+        msg['From'] = f"Newsletter name <{config.user}>"
+        msg['To'] = config.user
+        msg['BCC'] = subscribers
+
+        # TODO: Use input file, which can be either .txt or .html.
+        msg.set_content("This is my newsletter, hi!")
+
+        # TODO: Get password from user input, not config file.
+
+        if click.confirm(f"Do you want to send this mail to {len(subscribers)} subscriber(s)?"):
+            server.send_message(msg)
+            click.echo(f"Sent {filepath} to {len(subscribers)} subscriber(s)")
+
+        server.close()
