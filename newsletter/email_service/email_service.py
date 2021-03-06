@@ -98,7 +98,7 @@ class EmailService:
             click.echo(f"\nWant to send out newsletter to {len(subscribers)} subscriber(s):\n\n" +
                        f"{(plain_text or html_text)[:300]} ...\n")
             if plain_text and html_text:
-                click.echo(f"HTML body:\n\n{html_text[:300]} ...\n");
+                click.echo(f"HTML body:\n\n{html_text[:300]} ...\n")
 
             if not dry_run and click.confirm('Do you want to proceed?',
                                            default=True):
@@ -111,4 +111,3 @@ class EmailService:
 
             server.quit()
 
-    
