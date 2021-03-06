@@ -103,7 +103,7 @@ def send_email(config, filepath, alternative, dry_run, imap_password,
     click.echo(active_subscribers)
 
     def is_html(text: str):
-        return '<html>' in text
+        return '<html>' in text.lower()
 
     body = filepath.read()
     alt_body = alternative.read() if alternative else None
