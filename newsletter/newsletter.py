@@ -108,6 +108,7 @@ def send_email(config, filepath, alternative, dry_run, imap_password,
     body = filepath.read()
     alt_body = alternative.read() if alternative else None
 
+    # TODO: This whole logic block from here on down is bad & needs refactoring.
     is_filepath_html = is_html(body)
     is_alternative_html = is_html(alt_body) if alt_body else False
     if alternative:
