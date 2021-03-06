@@ -31,8 +31,6 @@ def cli(ctx):
 @cli.command()
 def configure():
     """Edit the emailing config file."""
-
-    # TODO: Split IMAP & SMTP config; remove password from config.
     try:
         with open(CONFIG_FILEPATH, 'r') as config_file:
             config = json.dumps(json.load(config_file), ensure_ascii=False)
