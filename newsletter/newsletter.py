@@ -74,24 +74,39 @@ def ensure_config(config):
         )
 
 @cli.command()
+@click.pass_obj
+def subscribers(config):
+    """Print list of newsletter subscribers to stdout."""
+    ensure_config(config)
+
+    email_service = EmailService(config)
+    click.echo('\n'.join(email_service.get_subscribers()))
+
+@cli.command()
 @click.argument('filepath', type=click.File('r'))
 @click.argument('alternative', type=click.File('r'), required=False)
 @click.option('--dry-run', is_flag=True)
+@click.option('--confirm', is_flag=True)
 @click.pass_obj
-def send_email(config, filepath, alternative, dry_run):
+def send_email(config, filepath, alternative, dry_run, confirm):
     """Send email with content at given path(s) to all subscribers."""
     ensure_config(config)
 
     email_service = EmailService(config)
 
-    subscribers = email_service.get_subscribers()
-    click.echo(subscribers)
+    click.echo(f"Fetching emails for {config.user} at {config.host}")
+    active_subscribers = email_service.get_subscribers()
+    click.echo(f"Got {len(active_subscribers)} active subscriber(s)")
+    click.echo(active_subscribers)
 
-    def is_html(filepath: str):
-        return filepath.endswith('.html')
+    def is_html(text: str):
+        return '<html>' in text
 
-    is_filepath_html = is_html(filepath.name)
-    is_alternative_html = alternative and is_html(alternative.name)
+    body = filepath.read()
+    alt_body = alternative.read() if alternative else None
+
+    is_filepath_html = is_html(body)
+    is_alternative_html = is_html(alt_body) if alt_body else False
     if alternative:
         if is_filepath_html and is_alternative_html:
             raise click.UsageError(
@@ -102,13 +117,11 @@ def send_email(config, filepath, alternative, dry_run):
                 "Neither file is HTML; you should provide 1 HTML file and 1 plain text file"
             )
 
-    body = filepath.read()
     if not alternative:
         plain_text = None if is_filepath_html else body
         html_text = body if is_filepath_html else None
     else:
-        alt_body = alternative.read()
         plain_text = alt_body if is_filepath_html else body
         html_text = body if is_filepath_html else alt_body
 
-    email_service.send_email(html_text, plain_text, subscribers, dry_run)
+    email_service.send_email(html_text, plain_text, active_subscribers, dry_run, confirm)

@@ -27,8 +27,6 @@ class EmailService:
         imap_server.login(self.config.user, self.config.password)
         imap_server.select()
 
-        click.echo(f"Fetching emails for {self.config.user} at {self.config.host}")
-
         search_response, message_numbers_raw = imap_server.search(None, 'ALL')
         message_numbers = message_numbers_raw[0].split()
 
@@ -57,20 +55,18 @@ class EmailService:
 
             sender_email = email_regex_result.group()
             if 'unsubscribe' in subject.lower() and sender_email in subscribers:
-                click.echo(f"unsubscribe {sender}")
                 subscribers.remove(sender_email)
             elif 'subscribe' in subject.lower() and not sender_email in subscribers:
-                click.echo(f"subscribe {sender}")
                 subscribers.append(sender_email)
 
-        click.echo(f"Got {len(subscribers)} active subscriber(s)")
         return subscribers
 
     def send_email(self,
                    html_text: Optional[str],
                    plain_text: Optional[str],
                    subscribers: list[str],
-                   dry_run: bool):
+                   dry_run: bool,
+                   confirm: bool):
         def find_title_in_html(html: str) -> Optional[str]:
             result = re.search(r"<h1>(.+)<\/h1>", html)
             return result.group(1) if result else None
@@ -84,7 +80,9 @@ class EmailService:
             # TODO: Get password from user input, not config file.
             server.login(self.config.user, self.config.password)
 
-            title = find_title_in_html(html_text) if html_text else find_title_in_markdown(plain_text) or 'Untitled'
+            title = (find_title_in_html(html_text)
+                     if html_text
+                     else find_title_in_markdown(plain_text)) or 'Untitled'
 
             msg = MIMEMultipart('alternative')
             msg['Subject'] = title
@@ -97,13 +95,12 @@ class EmailService:
             if html_text:
                 msg.attach(MIMEText(html_text, 'html'))
 
-
             click.echo(f"\nWant to send out newsletter to {len(subscribers)} subscriber(s):\n\n" +
                        f"{(plain_text or html_text)[:300]} ...\n")
             if plain_text and html_text:
                 click.echo(f"HTML body:\n\n{html_text[:300]} ...\n");
 
-            if not dry_run and click.confirm('Do you want to proceed?'):
+            if not dry_run and (confirm or click.confirm('Do you want to proceed?')):
                 server.sendmail(self.config.user, subscribers, msg.as_string())
                 click.echo(f"Sent \"{title}\" to {len(subscribers)} subscriber(s)")
             elif dry_run:
