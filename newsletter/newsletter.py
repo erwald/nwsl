@@ -19,7 +19,7 @@ def cli(ctx):
         with open(CONFIG_FILEPATH, 'r') as config_file:
             config = json.load(config_file)
             assert config
-            ctx.obj = Config(config['host'], config['user'], config['password'])
+            ctx.obj = Config.from_json(config)
     except (json.decoder.JSONDecodeError,
             KeyError,
             TypeError,
@@ -40,6 +40,7 @@ def configure():
     except (AssertionError, FileNotFoundError, json.decoder.JSONDecodeError):
         click.echo("Couldn't find/read config file; creating new one ...")
         config = """{
+    "sender": "Sender Name",
     "host": "mail.myhost.net",
     "user": "mail@mydomain.net",
     "password": "replaceme"

@@ -88,8 +88,7 @@ class EmailService:
 
             msg = MIMEMultipart('alternative')
             msg['Subject'] = title
-            # TODO: Add newsletter name to config.
-            msg['From'] = f"Newsletter name <{self.config.user}>"
+            msg['From'] = f"{self.config.sender} <{self.config.user}>"
             # TODO: Allow different sender email from IMAP user.
             msg['To'] = self.config.user
 
