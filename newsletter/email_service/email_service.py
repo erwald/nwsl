@@ -20,11 +20,11 @@ class EmailService:
     def __init__(self, config: Config):
         self.config = config
 
-    def get_subscribers(self) -> list[str]:
+    def get_subscribers(self, imap_password: str) -> list[str]:
         """Fetch emails and return list of subscribers."""
 
-        imap_server = imaplib.IMAP4_SSL(host=self.config.host)
-        imap_server.login(self.config.user, self.config.password)
+        imap_server = imaplib.IMAP4_SSL(host=self.config.imap_host)
+        imap_server.login(self.config.imap_user, imap_password)
         imap_server.select()
 
         search_response, message_numbers_raw = imap_server.search(None, 'ALL')
@@ -66,7 +66,7 @@ class EmailService:
                    plain_text: Optional[str],
                    subscribers: list[str],
                    dry_run: bool,
-                   confirm: bool):
+                   smtp_password: str):
         def find_title_in_html(html: str) -> Optional[str]:
             result = re.search(r"<h1>(.+)<\/h1>", html)
             return result.group(1) if result else None
@@ -76,9 +76,10 @@ class EmailService:
             return result.group(1) if result else None
 
         context = ssl.create_default_context()
-        with smtplib.SMTP_SSL(self.config.host, 465, context=context) as server:
-            # TODO: Get password from user input, not config file.
-            server.login(self.config.user, self.config.password)
+        with smtplib.SMTP_SSL(
+                self.config.smtp_host, 465, context=context
+        ) as server:
+            server.login(self.config.smtp_user, smtp_password)
 
             title = (find_title_in_html(html_text)
                      if html_text
@@ -86,9 +87,8 @@ class EmailService:
 
             msg = MIMEMultipart('alternative')
             msg['Subject'] = title
-            msg['From'] = f"{self.config.sender} <{self.config.user}>"
-            # TODO: Allow different sender email from IMAP user.
-            msg['To'] = self.config.user
+            msg['From'] = f"{self.config.sender} <{self.config.smtp_user}>"
+            msg['To'] = self.config.smtp_user
 
             if plain_text:
                 msg.attach(MIMEText(plain_text, 'plain'))
@@ -100,8 +100,9 @@ class EmailService:
             if plain_text and html_text:
                 click.echo(f"HTML body:\n\n{html_text[:300]} ...\n");
 
-            if not dry_run and (confirm or click.confirm('Do you want to proceed?')):
-                server.sendmail(self.config.user, subscribers, msg.as_string())
+            if not dry_run and click.confirm('Do you want to proceed?',
+                                           default=True):
+                server.sendmail(self.config.smtp_user, subscribers, msg.as_string())
                 click.echo(f"Sent \"{title}\" to {len(subscribers)} subscriber(s)")
             elif dry_run:
                 click.echo(f"Would have sent \"{title}\" to {len(subscribers)} subscriber(s)")
