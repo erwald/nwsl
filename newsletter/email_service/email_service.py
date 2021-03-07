@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from typing import Optional
 import email
 import imaplib
 import re
 import smtplib
 import ssl
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from typing import Optional
 
 import click
-
 from newsletter.config.config import Config
 
 

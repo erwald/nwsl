@@ -2,12 +2,13 @@
 
 import json
 import os
+from collections.abc import Callable
+from typing import Optional
 
 import click
 
-from newsletter.email_service.email_service import EmailService
 from newsletter.config.config import Config
-
+from newsletter.email_service.email_service import EmailService
 
 CONFIG_FILEPATH = f"{os.path.dirname(os.path.realpath(__file__))}/config.json"
 
@@ -102,31 +103,33 @@ def send_email(config, filepath, alternative, dry_run, imap_password,
     click.echo(f"Got {len(active_subscribers)} active subscriber(s)")
     click.echo(active_subscribers)
 
-    def is_html(text: str):
-        return '<html>' in text.lower()
-
     body = filepath.read()
     alt_body = alternative.read() if alternative else None
 
-    # TODO: This whole logic block from here on down is bad & needs refactoring.
-    is_filepath_html = is_html(body)
-    is_alternative_html = is_html(alt_body) if alt_body else False
-    if alternative:
-        if is_filepath_html and is_alternative_html:
-            raise click.UsageError(
-                "Both files are HTML; you should provide 1 HTML file and 1 plain text file"
-            )
-        if not is_filepath_html and not is_alternative_html:
-            raise click.UsageError(
-                "Neither file is HTML; you should provide 1 HTML file and 1 plain text file"
-            )
+    def is_html(text: str):
+        return '<html>' in text.lower()
 
-    if not alternative:
-        plain_text = None if is_filepath_html else body
-        html_text = body if is_filepath_html else None
-    else:
-        plain_text = alt_body if is_filepath_html else body
-        html_text = body if is_filepath_html else alt_body
+    def get_text_matching(predicate: Callable[str, bool],
+                          texts: list[Optional[str]]) -> Optional[str]:
+        for text in texts:
+            if text and predicate(text):
+                return text
+        return None
+    html_text = get_text_matching(is_html, [body, alt_body])
+    plain_text = get_text_matching(lambda text: not is_html(text), [body, alt_body])
+
+    if alternative and not html_text:
+        raise click.UsageError(
+            "Neither file is HTML; you should provide 1 HTML file and 1 plain text file"
+        )
+    if alternative and not plain_text:
+        raise click.UsageError(
+            "Both files are HTML; you should provide 1 HTML file and 1 plain text file"
+        )
+    if not html_text and not plain_text:
+        raise click.UsageError(
+            "Found no input files; this should never happen"
+        )
 
     email_service.send_email(html_text, plain_text, active_subscribers, dry_run,
                              smtp_password)
