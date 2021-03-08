@@ -36,7 +36,7 @@ but more about this below.
 
 TODO: Add installation instructions
 
-## Set-up
+## Getting Started
 
 In order to use `nwsl`, you first need to set up a suitable email inbox. You'll then want to instruct prospective subscribers to send an email to this address with "subscribe" in the subject line. You'll probably also want to add instructions for unsubscribing in your newsletter emails; to unsubscribe, subscribers need to send an email to the same address with "unsubscribe" in the subject line.
 
@@ -121,4 +121,15 @@ Options:
   --imap-password TEXT  Your IMAP password. If empty, it prompts you for it.
   --smtp-password TEXT  Your SMTP password. If empty, it prompts you for it.
   --help                Show this message and exit.
+```
+
+## Running the Tests
+
+```sh
+$ poetry run python tests/test_newsletter.py
+..........
+----------------------------------------------------------------------
+Ran 10 tests in 0.022s
+
+OK
 ```
