@@ -34,7 +34,7 @@ but more about this below.
 
 ## Installation
 
-TODO: Add installaction instructions
+TODO: Add installation instructions
 
 ## Set-up
 
