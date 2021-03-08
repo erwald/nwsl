@@ -12,7 +12,6 @@ from typing import Optional
 import click
 from newsletter.config.config import Config
 
-
 class EmailService:
     """This class reads & sends newsletter emails."""
 
