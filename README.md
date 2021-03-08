@@ -22,7 +22,7 @@ HTML body:
 <html>
     <head></head>
     <body>
-        <p>This here is the HTMl version</p> ...
+        <p>This here is the HTML version</p> ...
 
 Do you want to proceed? [Y/n]: y
 Sent "My Newsletter Title" to 3 subscriber(s)
@@ -33,6 +33,8 @@ but more about this below.
 `nwsl` is currently in alpha. I'm looking to add more features & would be happy to get feature requests or contributions.
 
 ## Installation
+
+TODO: Add installaction instructions
 
 ## Set-up
 
