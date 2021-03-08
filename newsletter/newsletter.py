@@ -164,9 +164,7 @@ def send_email(config, file1, file2, dry_run, imap_password, smtp_password):
             "Both files are HTML; you should provide 1 HTML file and 1 plain text file"
         )
     if not html_text and not plain_text:
-        raise click.UsageError(
-            "Found no input files; this should never happen"
-        )
+        raise click.UsageError("Found no input files; this should never happen")
 
     email_service.send_email(html_text, plain_text, active_subscribers, dry_run,
                              smtp_password)
