@@ -34,7 +34,11 @@ but more about this below.
 
 ## Installation
 
-TODO: Add installation instructions
+This program requires Python 3. After cloning the repository, run:
+
+```shellsession
+$ poetry install
+```
 
 ## Getting Started
 
