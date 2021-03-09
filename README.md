@@ -40,6 +40,19 @@ This program requires Python 3. After cloning the repository, run:
 $ poetry install
 ```
 
+You can then run commands locally in the repository,
+
+```shellsession
+$ poetry run nwsl configure
+```
+
+or install the program across your system,
+
+```shellsession
+$ poetry build --f=wheel && pip3 install --force-reinstall dist/newsletter-0.1.0-py3-none-any.whl
+$ nwsl configure
+```
+
 ## Getting Started
 
 In order to use `nwsl`, you first need to set up a suitable email inbox. You'll then want to instruct prospective subscribers to send an email to this address with "subscribe" in the subject line. You'll probably also want to add instructions for unsubscribing in your newsletter emails; to unsubscribe, subscribers need to send an email to the same address with "unsubscribe" in the subject line.
