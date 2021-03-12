@@ -5,12 +5,14 @@ import imaplib
 import re
 import smtplib
 import ssl
+import sys
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import Optional
 
 import click
 from newsletter.config.config import Config
+
 
 class EmailService:
     """This class reads & sends newsletter emails."""
@@ -98,8 +100,13 @@ class EmailService:
             if plain_text and html_text:
                 click.echo(f"HTML body:\n\n{html_text[:300]} ...\n")
 
-            if not dry_run and click.confirm('Do you want to proceed?',
-                                           default=True):
+            # Here we need to check whether we're reading from stdin. If we are,
+            # then we can ask the user for confirmation before sending the
+            # email. If not, the command is being used in a pipe, meaning we
+            # can't present a confirmation dialog (this is a limitation in
+            # Click), so we just go ahead & send the email without confirmation.
+            if (not dry_run and (not sys.stdin.isatty() or
+                               click.confirm('Do you want to proceed?'))):
                 server.sendmail(self.config.smtp_user, subscribers, msg.as_string())
                 click.echo(f"Sent \"{title}\" to {len(subscribers)} subscriber(s)")
             elif dry_run:
@@ -108,4 +115,3 @@ class EmailService:
                 click.echo(f"Did not send \"{title}\"")
 
             server.quit()
-
