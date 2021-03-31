@@ -6,6 +6,7 @@ import re
 import smtplib
 import ssl
 import sys
+import html
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import Optional
@@ -81,7 +82,7 @@ class EmailService:
         ) as server:
             server.login(self.config.smtp_user, smtp_password)
 
-            title = (find_title_in_html(html_text)
+            title = (html.unescape(find_title_in_html(html_text))
                      if html_text
                      else find_title_in_markdown(plain_text)) or 'Untitled'
 
